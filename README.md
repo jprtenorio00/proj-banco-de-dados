@@ -42,7 +42,7 @@ Contribuições são bem-vindas. Por favor, abra um issue para discutir as mudan
 
 ## Autores
 
-- Seu Nome
+- João Pedro Rodrigues Tenório
 
 ## Agradecimentos
 
