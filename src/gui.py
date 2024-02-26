@@ -1,5 +1,10 @@
 import tkinter as tk
-from tkinter import filedialog, scrolledtext
+from tkinter import filedialog, messagebox, scrolledtext
+from src.data_sctructures import Tabela, Tupla
+
+# Inicialização da tabela com um tamanho de página exemplo
+tamanho_pagina = 100  # Defina conforme a necessidade ou faça ajustável pelo usuário
+tabela = Tabela(tamanho_pagina)
 
 def setup_gui(root):
     root.title("Índice Hash Estático")
@@ -41,21 +46,27 @@ def setup_gui(root):
     stats_text = scrolledtext.ScrolledText(root, height=5)
     stats_text.pack(pady=10)
 
-    # Funções Dummy (serão implementadas posteriormente)
-    def load_data():
-        filename = filedialog.askopenfilename()
-        if filename:
+def load_data():
+    filename = filedialog.askopenfilename(filetypes=(("Text files", "*.txt"), ("All files", "*.*")))
+    if filename:
+        try:
+            with open(filename, 'r') as file:
+                for line in file:
+                    palavra = line.strip()
+                    tabela.adicionar_tupla(Tupla(palavra, None))  # Supondo que a palavra seja a chave e não haja dados adicionais
             load_status.config(text=f"Arquivo Carregado: {filename.split('/')[-1]}")
-            # Aqui você adicionará a lógica para carregar e processar o arquivo
+            messagebox.showinfo("Carregamento Concluído", "Dados carregados com sucesso na tabela.")
+        except Exception as e:
+            messagebox.showerror("Erro ao Carregar", f"Ocorreu um erro ao carregar o arquivo: {e}")
 
-    def build_index():
-        # Lógica para construir o índice
-        pass
+def build_index():
+    # Lógica para construir o índice será implementada aqui
+    pass
 
-    def search(query):
-        # Lógica para buscar a chave
-        search_result.config(text=f"Resultado para '{query}': ...")
+def search(query):
+    # Lógica para buscar a chave será implementada aqui
+    search_result.config(text=f"Resultado para '{query}': ...")
 
-    def table_scan(limit):
-        # Lógica para realizar o table scan
-        table_scan_text.insert(tk.INSERT, f"Exibindo {limit} registros...\n")
+def table_scan(limit):
+    # Lógica para realizar o table scan será implementada aqui
+    table_scan_text.insert(tk.INSERT, f"Exibindo {limit} registros...\n")
