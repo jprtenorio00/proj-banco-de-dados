@@ -1,19 +1,24 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox, scrolledtext
-from src.data_sctructures import Tabela, Tupla
+from data_sctructures import Tabela, Tupla
 
 # Inicialização da tabela com um tamanho de página exemplo
 tamanho_pagina = 100  # Defina conforme a necessidade ou faça ajustável pelo usuário
 tabela = Tabela(tamanho_pagina)
 
+# Declarando load_status como uma variável global para que possa ser acessada em load_data
+load_status = None
+
 def setup_gui(root):
+    global load_status  # Indica que estamos usando a variável global definida fora da função
+
     root.title("Índice Hash Estático")
     root.geometry("800x600")  # Define o tamanho da janela
 
     # Carregamento de Dados
     load_frame = tk.Frame(root)
     load_frame.pack(pady=10)
-    load_button = tk.Button(load_frame, text="Carregar Dados", command=lambda: load_data())
+    load_button = tk.Button(load_frame, text="Carregar Dados", command=load_data)
     load_button.pack(side=tk.LEFT)
     load_status = tk.Label(load_frame, text="Nenhum arquivo carregado.")
     load_status.pack(side=tk.LEFT, padx=10)
@@ -47,6 +52,8 @@ def setup_gui(root):
     stats_text.pack(pady=10)
 
 def load_data():
+    global load_status  # Acessa a variável global dentro desta função
+
     filename = filedialog.askopenfilename(filetypes=(("Text files", "*.txt"), ("All files", "*.*")))
     if filename:
         try:
@@ -54,7 +61,7 @@ def load_data():
                 for line in file:
                     palavra = line.strip()
                     tabela.adicionar_tupla(Tupla(palavra, None))  # Supondo que a palavra seja a chave e não haja dados adicionais
-            load_status.config(text=f"Arquivo Carregado: {filename.split('/')[-1]}")
+            load_status.config(text=f"Arquivo Carregado: {filename.split('/')[-1]}")  # Agora funciona corretamente
             messagebox.showinfo("Carregamento Concluído", "Dados carregados com sucesso na tabela.")
         except Exception as e:
             messagebox.showerror("Erro ao Carregar", f"Ocorreu um erro ao carregar o arquivo: {e}")
@@ -65,8 +72,10 @@ def build_index():
 
 def search(query):
     # Lógica para buscar a chave será implementada aqui
-    search_result.config(text=f"Resultado para '{query}': ...")
+    # search_result.config(text=f"Resultado para '{query}': ...")
+    pass
 
 def table_scan(limit):
     # Lógica para realizar o table scan será implementada aqui
-    table_scan_text.insert(tk.INSERT, f"Exibindo {limit} registros...\n")
+    # table_scan_text.insert(tk.INSERT, f"Exibindo {limit} registros...\n")
+    pass
