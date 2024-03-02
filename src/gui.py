@@ -3,7 +3,7 @@ from tkinter import filedialog, messagebox, scrolledtext
 from data_sctructures import Tabela, Tupla
 
 # Inicialização da tabela com um tamanho de página exemplo
-tamanho_pagina = 100  # Este valor pode ser ajustado conforme necessário
+tamanho_pagina = 1000  # Este valor pode ser ajustado conforme necessário
 tabela = Tabela(tamanho_pagina)
 
 # Declarando variáveis globais para acessá-las em diferentes funções
@@ -13,7 +13,8 @@ table_scan_text = None
 stats_text = None
 
 def setup_gui(root):
-    global load_status, search_result, table_scan_text, stats_text
+    global load_status, search_result, table_scan_text, stats_text, tamanho_pagina_var
+    tamanho_pagina_var = tk.IntVar(value=100)  # Valor padrão de 100
 
     root.title("Índice Hash Estático")
     root.geometry("1024x768")  # Ajuste o tamanho da janela conforme necessário
@@ -26,9 +27,27 @@ def setup_gui(root):
     load_status = tk.Label(load_frame, text="Nenhum arquivo carregado.")
     load_status.pack(side=tk.LEFT, padx=10)
 
+    # Tamanho da Página
+    tamanho_pagina_frame = tk.Frame(root)
+    tamanho_pagina_frame.pack(pady=10)
+    tk.Label(tamanho_pagina_frame, text="Tamanho da Página:").pack(side=tk.LEFT)
+    tamanho_pagina_entry = tk.Entry(tamanho_pagina_frame, textvariable=tamanho_pagina_var)
+    tamanho_pagina_entry.pack(side=tk.LEFT)
+
+    def set_tamanho_pagina():
+        try:
+            valor = int(tamanho_pagina_entry.get())
+            tamanho_pagina_var.set(valor)
+            messagebox.showinfo("Tamanho da Página", f"Tamanho da página definido como {valor}.")
+        except ValueError:
+            messagebox.showerror("Erro", "Por favor, insira um número inteiro válido.")
+
+    tamanho_pagina_button = tk.Button(tamanho_pagina_frame, text="Definir Tamanho", command=set_tamanho_pagina)
+    tamanho_pagina_button.pack(side=tk.LEFT, padx=10)
+
     # Construção do Índice
-    build_index_button = tk.Button(root, text="Construir Índice", command=build_index)
-    build_index_button.pack(pady=10)
+    # build_index_button = tk.Button(root, text="Construir Índice", command=build_index)
+    # build_index_button.pack(pady=10)
 
     # Busca
     search_frame = tk.Frame(root)
@@ -61,17 +80,19 @@ def setup_gui(root):
     stats_button.pack(pady=10)
 
 def load_data():
-    global load_status
+    global load_status, tabela
 
     filename = filedialog.askopenfilename(filetypes=(("Text files", "*.txt"), ("All files", "*.*")))
     if filename:
         try:
+            tabela = Tabela(tamanho_pagina_var.get())  # Utilize o tamanho da página definido pelo usuário
             with open(filename, 'r') as file:
                 for line in file:
                     palavra = line.strip()
-                    tabela.adicionar_tupla(Tupla(palavra, palavra))  # Use a palavra como dados também, para simplificar
+                    tabela.adicionar_tupla(Tupla(palavra, palavra))
             load_status.config(text=f"Arquivo Carregado: {filename.split('/')[-1]}")
-            messagebox.showinfo("Carregamento Concluído", "Dados carregados com sucesso na tabela.")
+            tabela.construir_indice()  # Construa o índice imediatamente após carregar os dados
+            messagebox.showinfo("Carregamento e Construção de Índice", "Dados carregados e índice construído com sucesso.")
         except Exception as e:
             messagebox.showerror("Erro ao Carregar", f"Ocorreu um erro ao carregar o arquivo: {e}")
 
@@ -83,11 +104,11 @@ def build_index():
         messagebox.showerror("Erro ao Construir Índice", f"Ocorreu um erro ao construir o índice: {e}")
 
 def search(query):
-    resultado = tabela.buscar(query)  # Supõe-se que existe um método buscar na classe Tabela
+    resultado = tabela.buscar(query)  # A função buscar deve ser modificada para retornar os detalhes necessários
     if resultado:
-        search_result.config(text="Chave encontrada.")
+        search_result.config(text=f"Palavra: '{resultado['palavra']}', Página: {resultado['página']}, Páginas Acessadas: {resultado['páginas_acessadas']}")
     else:
-        search_result.config(text="Chave não encontrada.")
+        search_result.config(text="Palavra não encontrada.")
 
 def table_scan(limit):
     global table_scan_text

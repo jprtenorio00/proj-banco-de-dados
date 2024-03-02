@@ -54,14 +54,11 @@ class Tabela:
     def buscar(self, chave):
         indice_bucket = self.funcao_hash(chave)
         bucket = self.buckets[indice_bucket]
+        paginas_acessadas = 0
         for entrada in bucket.entradas:
+            paginas_acessadas += 1
             if entrada[0] == chave:
-                # pagina_ref = entrada[1]
-                # pagina = self.paginas[pagina_ref]
-                # for tupla in pagina.tuplas:
-                #     if tupla.chave == chave:
-                #         return tupla
-                return entrada
+                return {'palavra': chave, 'página': entrada[1], 'páginas_acessadas': paginas_acessadas}
         return None
     
     def table_scan(self, limite):
