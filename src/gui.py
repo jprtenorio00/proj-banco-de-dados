@@ -5,15 +5,13 @@ from data_sctructures import Tabela, Tupla
 class HashIndexGUI:
     def __init__(self, root):
         self.root = root
-        self.tabela = Tabela(tamanho_pagina=100)  # Valor padrão, pode ser alterado pelo usuário
+        self.tabela = Tabela(tamanho_pagina=100)
         self.setup_gui()
 
     def setup_gui(self):
-        """Configura os elementos da interface gráfica e os dispõe na janela."""
         self.root.title("Índice Hash Estático")
         self.root.geometry("1024x768")
 
-        # Configuração dos widgets e layout aqui
         self.setup_load_frame()
         self.setup_page_size_frame()
         self.setup_search_frame()
@@ -21,7 +19,6 @@ class HashIndexGUI:
         self.setup_stats_display()
 
     def setup_load_frame(self):
-        """Configura o frame para carregar dados."""
         load_frame = tk.Frame(self.root)
         load_frame.pack(pady=10)
 
@@ -32,7 +29,6 @@ class HashIndexGUI:
         self.load_status.pack(side=tk.LEFT, padx=10)
 
     def setup_page_size_frame(self):
-        """Configura o frame para definir o tamanho da página."""
         page_size_frame = tk.Frame(self.root)
         page_size_frame.pack(pady=10)
 
@@ -45,7 +41,6 @@ class HashIndexGUI:
         set_page_size_button.pack(side=tk.LEFT, padx=10)
 
     def setup_search_frame(self):
-        """Configura o frame para buscar tuplas."""
         search_frame = tk.Frame(self.root)
         search_frame.pack(pady=10)
 
@@ -59,7 +54,6 @@ class HashIndexGUI:
         self.search_result.pack(pady=10)
 
     def setup_table_scan_frame(self):
-        """Configura o frame para o Table Scan."""
         table_scan_frame = tk.Frame(self.root)
         table_scan_frame.pack(pady=10)
 
@@ -73,7 +67,6 @@ class HashIndexGUI:
         self.table_scan_text.pack(pady=10)
 
     def setup_stats_display(self):
-        """Configura a exibição de estatísticas."""
         stats_label = tk.Label(self.root, text="Estatísticas:")
         stats_label.pack(pady=10)
 
@@ -84,7 +77,6 @@ class HashIndexGUI:
         stats_button.pack(pady=10)
 
     def load_data(self):
-        """Carrega dados de um arquivo selecionado pelo usuário."""
         filename = filedialog.askopenfilename(filetypes=(("Text files", "*.txt"), ("All files", "*.*")))
         if filename:
             try:
@@ -100,7 +92,6 @@ class HashIndexGUI:
                 messagebox.showerror("Erro ao Carregar", f"Ocorreu um erro ao carregar o arquivo: {e}")
 
     def set_page_size(self):
-        """Define o tamanho da página com base na entrada do usuário."""
         try:
             valor = self.page_size_var.get()
             messagebox.showinfo("Tamanho da Página", f"Tamanho da página definido como {valor}.")
@@ -108,7 +99,6 @@ class HashIndexGUI:
             messagebox.showerror("Erro", "Por favor, insira um número inteiro válido.")
 
     def search(self):
-        """Realiza a busca por uma chave e atualiza a GUI com os resultados encontrados."""
         query = self.search_entry.get()
         resultados = self.tabela.buscar(query)
         
@@ -123,26 +113,23 @@ class HashIndexGUI:
             self.search_result.config(text="Nenhum resultado encontrado.")
 
     def table_scan(self):
-        """Realiza um table scan baseado no limite especificado pelo usuário e atualiza a GUI com os resultados."""
         try:
             limit = int(self.table_scan_entry.get())
             resultados = self.tabela.table_scan(limit)
             
-            self.table_scan_text.delete('1.0', tk.END)  # Limpa o texto anterior
+            self.table_scan_text.delete('1.0', tk.END)
             for tupla in resultados:
                 self.table_scan_text.insert(tk.END, f"Chave: '{tupla.chave}'\n")
         except ValueError:
             messagebox.showerror("Erro", "Por favor, insira um número inteiro válido para o limite.")
 
     def show_statistics(self):
-        """Calcula estatísticas do índice hash e atualiza a GUI com essas informações."""
         estatisticas = self.tabela.calcular_estatisticas()
         
-        self.stats_text.delete('1.0', tk.END)  # Limpa o texto anterior
+        self.stats_text.delete('1.0', tk.END)
         self.stats_text.insert(tk.END, f"Total de Entradas: {estatisticas['total_entradas']}\n")
         self.stats_text.insert(tk.END, f"Total de Colisões: {estatisticas['total_colisoes']}\n")
         self.stats_text.insert(tk.END, f"Taxa de Colisões: {estatisticas['taxa_colisoes'] * 100:.2f}%\n")
-
 
 def setup_gui(root):
     HashIndexGUI(root)
