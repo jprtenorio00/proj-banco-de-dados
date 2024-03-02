@@ -2,130 +2,152 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, scrolledtext
 from data_sctructures import Tabela, Tupla
 
-tamanho_pagina = 100
-tabela = Tabela(tamanho_pagina)
-load_status = None
-search_result = None
-table_scan_text = None
-stats_text = None
+class HashIndexGUI:
+    def __init__(self, root):
+        self.root = root
+        self.tabela = Tabela(tamanho_pagina=100)  # Valor padrão, pode ser alterado pelo usuário
+        self.setup_gui()
 
-def setup_gui(root):
-    global load_status, search_result, table_scan_text, stats_text, tamanho_pagina_var
-    tamanho_pagina_var = tk.IntVar(value=100)
+    def setup_gui(self):
+        """Configura os elementos da interface gráfica e os dispõe na janela."""
+        self.root.title("Índice Hash Estático")
+        self.root.geometry("1024x768")
 
-    root.title("Índice Hash Estático")
-    root.geometry("1024x768")
+        # Configuração dos widgets e layout aqui
+        self.setup_load_frame()
+        self.setup_page_size_frame()
+        self.setup_search_frame()
+        self.setup_table_scan_frame()
+        self.setup_stats_display()
 
-    # Carregamento de Dados
-    load_frame = tk.Frame(root)
-    load_frame.pack(pady=10)
-    load_button = tk.Button(load_frame, text="Carregar Dados", command=load_data)
-    load_button.pack(side=tk.LEFT)
-    load_status = tk.Label(load_frame, text="Nenhum arquivo carregado.")
-    load_status.pack(side=tk.LEFT, padx=10)
+    def setup_load_frame(self):
+        """Configura o frame para carregar dados."""
+        load_frame = tk.Frame(self.root)
+        load_frame.pack(pady=10)
 
-    # Tamanho da Página
-    tamanho_pagina_frame = tk.Frame(root)
-    tamanho_pagina_frame.pack(pady=10)
-    tk.Label(tamanho_pagina_frame, text="Tamanho da Página:").pack(side=tk.LEFT)
-    tamanho_pagina_entry = tk.Entry(tamanho_pagina_frame, textvariable=tamanho_pagina_var)
-    tamanho_pagina_entry.pack(side=tk.LEFT)
+        load_button = tk.Button(load_frame, text="Carregar Dados", command=self.load_data)
+        load_button.pack(side=tk.LEFT)
 
-    def set_tamanho_pagina():
+        self.load_status = tk.Label(load_frame, text="Nenhum arquivo carregado.")
+        self.load_status.pack(side=tk.LEFT, padx=10)
+
+    def setup_page_size_frame(self):
+        """Configura o frame para definir o tamanho da página."""
+        page_size_frame = tk.Frame(self.root)
+        page_size_frame.pack(pady=10)
+
+        self.page_size_var = tk.IntVar(value=100)
+        tk.Label(page_size_frame, text="Tamanho da Página:").pack(side=tk.LEFT)
+        page_size_entry = tk.Entry(page_size_frame, textvariable=self.page_size_var)
+        page_size_entry.pack(side=tk.LEFT)
+
+        set_page_size_button = tk.Button(page_size_frame, text="Definir Tamanho", command=self.set_page_size)
+        set_page_size_button.pack(side=tk.LEFT, padx=10)
+
+    def setup_search_frame(self):
+        """Configura o frame para buscar tuplas."""
+        search_frame = tk.Frame(self.root)
+        search_frame.pack(pady=10)
+
+        self.search_entry = tk.Entry(search_frame, width=50)
+        self.search_entry.pack(side=tk.LEFT)
+
+        search_button = tk.Button(search_frame, text="Buscar", command=self.search)
+        search_button.pack(side=tk.LEFT, padx=10)
+
+        self.search_result = tk.Label(self.root, text="")
+        self.search_result.pack(pady=10)
+
+    def setup_table_scan_frame(self):
+        """Configura o frame para o Table Scan."""
+        table_scan_frame = tk.Frame(self.root)
+        table_scan_frame.pack(pady=10)
+
+        self.table_scan_entry = tk.Entry(table_scan_frame, width=20)
+        self.table_scan_entry.pack(side=tk.LEFT)
+
+        table_scan_button = tk.Button(table_scan_frame, text="Table Scan", command=self.table_scan)
+        table_scan_button.pack(side=tk.LEFT, padx=10)
+
+        self.table_scan_text = scrolledtext.ScrolledText(self.root, height=10, width=100)
+        self.table_scan_text.pack(pady=10)
+
+    def setup_stats_display(self):
+        """Configura a exibição de estatísticas."""
+        stats_label = tk.Label(self.root, text="Estatísticas:")
+        stats_label.pack(pady=10)
+
+        self.stats_text = scrolledtext.ScrolledText(self.root, height=5, width=100)
+        self.stats_text.pack(pady=10)
+
+        stats_button = tk.Button(self.root, text="Mostrar Estatísticas", command=self.show_statistics)
+        stats_button.pack(pady=10)
+
+    def load_data(self):
+        """Carrega dados de um arquivo selecionado pelo usuário."""
+        filename = filedialog.askopenfilename(filetypes=(("Text files", "*.txt"), ("All files", "*.*")))
+        if filename:
+            try:
+                self.tabela = Tabela(self.page_size_var.get())
+                with open(filename, 'r') as file:
+                    for line in file:
+                        palavra = line.strip()
+                        self.tabela.adicionar_tupla(Tupla(palavra, palavra))
+                self.load_status.config(text=f"Arquivo Carregado: {filename.split('/')[-1]}")
+                self.tabela.construir_indice()
+                messagebox.showinfo("Carregamento e Construção de Índice", "Dados carregados e índice construído com sucesso.")
+            except Exception as e:
+                messagebox.showerror("Erro ao Carregar", f"Ocorreu um erro ao carregar o arquivo: {e}")
+
+    def set_page_size(self):
+        """Define o tamanho da página com base na entrada do usuário."""
         try:
-            valor = int(tamanho_pagina_entry.get())
-            tamanho_pagina_var.set(valor)
+            valor = self.page_size_var.get()
             messagebox.showinfo("Tamanho da Página", f"Tamanho da página definido como {valor}.")
         except ValueError:
             messagebox.showerror("Erro", "Por favor, insira um número inteiro válido.")
 
-    tamanho_pagina_button = tk.Button(tamanho_pagina_frame, text="Definir Tamanho", command=set_tamanho_pagina)
-    tamanho_pagina_button.pack(side=tk.LEFT, padx=10)
+    def search(self):
+        """Realiza a busca por uma chave e atualiza a GUI com os resultados encontrados."""
+        query = self.search_entry.get()
+        resultados = self.tabela.buscar(query)
+        
+        if resultados:
+            resultado_texto = f"{len(resultados)} resultado(s) encontrado(s) para '{query}':\n\n"
+            paginas_acessadas = 0
+            for tupla, pagina_ref in resultados:
+                paginas_acessadas += 1
+                resultado_texto += f"Chave: '{tupla.chave}', Página: {pagina_ref}, Páginas Acessadas: {paginas_acessadas}\n"
+            self.search_result.config(text=resultado_texto)
+        else:
+            self.search_result.config(text="Nenhum resultado encontrado.")
 
-    # Busca
-    search_frame = tk.Frame(root)
-    search_frame.pack(pady=10)
-    search_entry = tk.Entry(search_frame, width=50)
-    search_entry.pack(side=tk.LEFT)
-    search_button = tk.Button(search_frame, text="Buscar", command=lambda: search(search_entry.get()))
-    search_button.pack(side=tk.LEFT, padx=10)
-    search_result = tk.Label(root, text="")
-    search_result.pack(pady=10)
-
-    # Table Scan
-    table_scan_frame = tk.Frame(root)
-    table_scan_frame.pack(pady=10)
-    table_scan_entry = tk.Entry(table_scan_frame, width=20)
-    table_scan_entry.pack(side=tk.LEFT)
-    table_scan_button = tk.Button(table_scan_frame, text="Table Scan", command=lambda: table_scan(table_scan_entry.get()))
-    table_scan_button.pack(side=tk.LEFT, padx=10)
-    table_scan_text = scrolledtext.ScrolledText(root, height=10, width=100)
-    table_scan_text.pack(pady=10)
-
-    # Estatísticas
-    stats_label = tk.Label(root, text="Estatísticas:")
-    stats_label.pack(pady=10)
-    stats_text = scrolledtext.ScrolledText(root, height=5, width=100)
-    stats_text.pack(pady=10)
-
-    # Botão para Mostrar Estatísticas
-    stats_button = tk.Button(root, text="Mostrar Estatísticas", command=mostrar_estatisticas)
-    stats_button.pack(pady=10)
-
-def load_data():
-    global load_status, tabela
-
-    filename = filedialog.askopenfilename(filetypes=(("Text files", "*.txt"), ("All files", "*.*")))
-    if filename:
+    def table_scan(self):
+        """Realiza um table scan baseado no limite especificado pelo usuário e atualiza a GUI com os resultados."""
         try:
-            tabela = Tabela(tamanho_pagina_var.get())
-            with open(filename, 'r') as file:
-                for line in file:
-                    palavra = line.strip()
-                    tabela.adicionar_tupla(Tupla(palavra, palavra))
-            load_status.config(text=f"Arquivo Carregado: {filename.split('/')[-1]}")
-            tabela.construir_indice()
-            messagebox.showinfo("Carregamento e Construção de Índice", "Dados carregados e índice construído com sucesso.")
-        except Exception as e:
-            messagebox.showerror("Erro ao Carregar", f"Ocorreu um erro ao carregar o arquivo: {e}")
+            limit = int(self.table_scan_entry.get())
+            resultados = self.tabela.table_scan(limit)
+            
+            self.table_scan_text.delete('1.0', tk.END)  # Limpa o texto anterior
+            for tupla in resultados:
+                self.table_scan_text.insert(tk.END, f"Chave: '{tupla.chave}'\n")
+        except ValueError:
+            messagebox.showerror("Erro", "Por favor, insira um número inteiro válido para o limite.")
 
-def build_index():
-    try:
-        tabela.construir_indice()
-        messagebox.showinfo("Construir Índice", "Índice construído com sucesso.")
-    except Exception as e:
-        messagebox.showerror("Erro ao Construir Índice", f"Ocorreu um erro ao construir o índice: {e}")
+    def show_statistics(self):
+        """Calcula estatísticas do índice hash e atualiza a GUI com essas informações."""
+        estatisticas = self.tabela.calcular_estatisticas()
+        
+        self.stats_text.delete('1.0', tk.END)  # Limpa o texto anterior
+        self.stats_text.insert(tk.END, f"Total de Entradas: {estatisticas['total_entradas']}\n")
+        self.stats_text.insert(tk.END, f"Total de Colisões: {estatisticas['total_colisoes']}\n")
+        self.stats_text.insert(tk.END, f"Taxa de Colisões: {estatisticas['taxa_colisoes'] * 100:.2f}%\n")
 
-def search(query):
-    resultados = tabela.buscar(query)
-    if resultados:
-        resultado_texto = ""
-        paginas_acessadas = 0
-        for tupla_instancia, pagina_ref in resultados:
-            resultado_texto += f"Palavra: '{tupla_instancia.chave}', Página: {pagina_ref}\n"
-            paginas_acessadas += 1  # Atualize conforme sua lógica de contagem de páginas acessadas
-        search_result.config(text=f"{resultado_texto}Páginas Acessadas: {paginas_acessadas}")
-    else:
-        search_result.config(text="Palavra não encontrada.")
 
-def table_scan(limit):
-    global table_scan_text
-    try:
-        limit = int(limit)
-        resultados = tabela.table_scan(limit)
-        table_scan_text.delete('1.0', tk.END)
-        for tupla in resultados:
-            #table_scan_text.insert(tk.END, f"{tupla.chave}: {tupla.dados}\n")
-            table_scan_text.insert(tk.END, f"{tupla.chave}\n")
-    except ValueError:
-        messagebox.showerror("Erro", "Por favor, insira um número válido para o limite de registros.")
-    except Exception as e:
-        messagebox.showerror("Erro ao Realizar Table Scan", f"Ocorreu um erro: {e}")
+def setup_gui(root):
+    HashIndexGUI(root)
 
-def mostrar_estatisticas():
-    global stats_text
-    estatisticas = tabela.calcular_estatisticas()
-    stats_text.delete('1.0', tk.END)
-    stats_text.insert(tk.END, f"Total de Entradas: {estatisticas['total_entradas']}\n")
-    stats_text.insert(tk.END, f"Total de Colisões: {estatisticas['total_colisoes']}\n")
-    stats_text.insert(tk.END, f"Taxa de Colisões: {estatisticas['taxa_colisoes']:.2f}\n")
+if __name__ == "__main__":
+    root = tk.Tk()
+    setup_gui(root)
+    root.mainloop()
