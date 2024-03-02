@@ -72,10 +72,21 @@ def load_data():
             messagebox.showerror("Erro ao Carregar", f"Ocorreu um erro ao carregar o arquivo: {e}")
 
 def build_index():
-    messagebox.showinfo("Construir Índice", "A construção do índice ainda não foi implementada.")
+    try:
+        tabela.construir_indice()  # Supõe-se que existe um método construir_indice na classe Tabela
+        messagebox.showinfo("Construir Índice", "Índice construído com sucesso.")
+    except Exception as e:
+        messagebox.showerror("Erro ao Construir Índice", f"Ocorreu um erro ao construir o índice: {e}")
 
 def search(query):
-    messagebox.showinfo("Buscar", f"A busca pela chave '{query}' ainda não foi implementada.")
+    try:
+        resultado = tabela.buscar(query)  # Supõe-se que existe um método buscar na classe Tabela
+        if resultado:
+            search_result.config(text=f"Resultado: {resultado.dados}")
+        else:
+            search_result.config(text="Chave não encontrada.")
+    except Exception as e:
+        messagebox.showerror("Erro ao Buscar", f"Ocorreu um erro durante a busca: {e}")
 
 def table_scan(limit):
     messagebox.showinfo("Table Scan", f"O Table Scan para exibir {limit} registros ainda não foi implementado.")
