@@ -97,9 +97,14 @@ def build_index():
         messagebox.showerror("Erro ao Construir Índice", f"Ocorreu um erro ao construir o índice: {e}")
 
 def search(query):
-    resultado = tabela.buscar(query)
-    if resultado:
-        search_result.config(text=f"Palavra: '{resultado['palavra']}', Página: {resultado['página']}, Páginas Acessadas: {resultado['páginas_acessadas']}")
+    resultados = tabela.buscar(query)
+    if resultados:
+        resultado_texto = ""
+        paginas_acessadas = 0
+        for tupla_instancia, pagina_ref in resultados:
+            resultado_texto += f"Palavra: '{tupla_instancia.chave}', Página: {pagina_ref}\n"
+            paginas_acessadas += 1  # Atualize conforme sua lógica de contagem de páginas acessadas
+        search_result.config(text=f"{resultado_texto}Páginas Acessadas: {paginas_acessadas}")
     else:
         search_result.config(text="Palavra não encontrada.")
 

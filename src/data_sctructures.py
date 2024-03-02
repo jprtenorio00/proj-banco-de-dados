@@ -17,10 +17,12 @@ class Pagina:
 
 class Bucket:
     def __init__(self):
-        self.entradas = []
+        self.entradas = {}
 
-    def adicionar_entrada(self, chave, pagina_ref):
-        self.entradas.append((chave, pagina_ref))
+    def adicionar_entrada(self, chave, tupla):
+        if chave not in self.entradas:
+            self.entradas[chave] = []
+        self.entradas[chave].append(tupla)
 
 class Tabela:
     def __init__(self, tamanho_pagina):
@@ -39,28 +41,29 @@ class Tabela:
 
     def inicializar_buckets(self, num_buckets):
         self.num_buckets = num_buckets
-        self.buckets = [Bucket() for _ in range(num_buckets)]
+        self.buckets = [Bucket() for _ in range(self.num_buckets)]
 
     # Tirar dúvida com o professor sobre essa função.
     def funcao_hash(self, chave):
         return hash(chave) % self.num_buckets
 
     def construir_indice(self):
-        self.inicializar_buckets(len(self.paginas))
-        for i, pagina in enumerate(self.paginas):
+        self.inicializar_buckets(self.calcular_num_buckets())
+        for pagina in self.paginas:
             for tupla in pagina.tuplas:
                 indice_bucket = self.funcao_hash(tupla.chave)
-                self.buckets[indice_bucket].adicionar_entrada(tupla.chave, i)
+                self.buckets[indice_bucket].adicionar_entrada(tupla.chave, tupla)
 
     def buscar(self, chave):
         indice_bucket = self.funcao_hash(chave)
         bucket = self.buckets[indice_bucket]
-        paginas_acessadas = 0
-        for entrada in bucket.entradas:
-            paginas_acessadas += 1
-            if entrada[0] == chave:
-                return {'palavra': chave, 'página': entrada[1], 'páginas_acessadas': paginas_acessadas}
-        return None
+        resultados = []
+        if chave in bucket.entradas:
+            for tupla in bucket.entradas[chave]:
+                pagina_ref = self.encontrar_pagina_ref(tupla)
+                if pagina_ref is not None:
+                    resultados.append((tupla, pagina_ref))
+        return resultados
     
     def table_scan(self, limite):
         resultados = []
@@ -82,3 +85,15 @@ class Tabela:
             total_entradas += len(bucket.entradas)
         taxa_colisoes = colisoes / total_entradas if total_entradas > 0 else 0
         return {'taxa_colisoes': taxa_colisoes, 'total_colisoes': colisoes, 'total_entradas': total_entradas}
+    
+    def calcular_num_buckets(self):
+        NR = len(self.paginas) * self.tamanho_pagina
+        FR = 10
+        NB = max(NR // FR, 1)
+        return NB
+
+    def encontrar_pagina_ref(self, tupla):
+        for i, pagina in enumerate(self.paginas):
+            if tupla in pagina.tuplas:
+                return i  # Retorna o índice da página onde a tupla foi encontrada
+        return None
