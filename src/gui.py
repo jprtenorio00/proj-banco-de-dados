@@ -56,6 +56,10 @@ def setup_gui(root):
     stats_text = scrolledtext.ScrolledText(root, height=5, width=100)
     stats_text.pack(pady=10)
 
+    # Botão para Mostrar Estatísticas
+    stats_button = tk.Button(root, text="Mostrar Estatísticas", command=mostrar_estatisticas)
+    stats_button.pack(pady=10)
+
 def load_data():
     global load_status
 
@@ -65,7 +69,7 @@ def load_data():
             with open(filename, 'r') as file:
                 for line in file:
                     palavra = line.strip()
-                    tabela.adicionar_tupla(Tupla(palavra, None))  # Supondo que a palavra seja a chave
+                    tabela.adicionar_tupla(Tupla(palavra, palavra))  # Use a palavra como dados também, para simplificar
             load_status.config(text=f"Arquivo Carregado: {filename.split('/')[-1]}")
             messagebox.showinfo("Carregamento Concluído", "Dados carregados com sucesso na tabela.")
         except Exception as e:
@@ -79,14 +83,30 @@ def build_index():
         messagebox.showerror("Erro ao Construir Índice", f"Ocorreu um erro ao construir o índice: {e}")
 
 def search(query):
-    try:
-        resultado = tabela.buscar(query)  # Supõe-se que existe um método buscar na classe Tabela
-        if resultado:
-            search_result.config(text=f"Resultado: {resultado.dados}")
-        else:
-            search_result.config(text="Chave não encontrada.")
-    except Exception as e:
-        messagebox.showerror("Erro ao Buscar", f"Ocorreu um erro durante a busca: {e}")
+    resultado = tabela.buscar(query)  # Supõe-se que existe um método buscar na classe Tabela
+    if resultado:
+        search_result.config(text="Chave encontrada.")
+    else:
+        search_result.config(text="Chave não encontrada.")
 
 def table_scan(limit):
-    messagebox.showinfo("Table Scan", f"O Table Scan para exibir {limit} registros ainda não foi implementado.")
+    global table_scan_text
+    try:
+        limit = int(limit)
+        resultados = tabela.table_scan(limit)
+        table_scan_text.delete('1.0', tk.END)  # Limpa o texto antes de inserir novos resultados
+        for tupla in resultados:
+            #table_scan_text.insert(tk.END, f"{tupla.chave}: {tupla.dados}\n")
+            table_scan_text.insert(tk.END, f"{tupla.chave}\n")
+    except ValueError:
+        messagebox.showerror("Erro", "Por favor, insira um número válido para o limite de registros.")
+    except Exception as e:
+        messagebox.showerror("Erro ao Realizar Table Scan", f"Ocorreu um erro: {e}")
+
+def mostrar_estatisticas():
+    global stats_text
+    estatisticas = tabela.calcular_estatisticas()
+    stats_text.delete('1.0', tk.END)  # Limpa o texto antes de inserir novas estatísticas
+    stats_text.insert(tk.END, f"Total de Entradas: {estatisticas['total_entradas']}\n")
+    stats_text.insert(tk.END, f"Total de Colisões: {estatisticas['total_colisoes']}\n")
+    stats_text.insert(tk.END, f"Taxa de Colisões: {estatisticas['taxa_colisoes']:.2f}\n")

@@ -56,9 +56,31 @@ class Tabela:
         bucket = self.buckets[indice_bucket]
         for entrada in bucket.entradas:
             if entrada[0] == chave:
-                pagina_ref = entrada[1]
-                pagina = self.paginas[pagina_ref]
-                for tupla in pagina.tuplas:
-                    if tupla.chave == chave:
-                        return tupla
+                # pagina_ref = entrada[1]
+                # pagina = self.paginas[pagina_ref]
+                # for tupla in pagina.tuplas:
+                #     if tupla.chave == chave:
+                #         return tupla
+                return entrada
         return None
+    
+    def table_scan(self, limite):
+        resultados = []
+        contagem = 0
+        for pagina in self.paginas:
+            for tupla in pagina.tuplas:
+                resultados.append(tupla)
+                contagem += 1
+                if contagem >= limite:
+                    return resultados
+        return resultados
+
+    def calcular_estatisticas(self):
+        total_entradas = 0
+        colisoes = 0
+        for bucket in self.buckets:
+            if len(bucket.entradas) > 1:  # Mais de uma entrada indica uma colisão
+                colisoes += len(bucket.entradas) - 1
+            total_entradas += len(bucket.entradas)
+        taxa_colisoes = colisoes / total_entradas if total_entradas > 0 else 0
+        return {'taxa_colisoes': taxa_colisoes, 'total_colisoes': colisoes, 'total_entradas': total_entradas}
