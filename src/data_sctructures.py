@@ -41,11 +41,12 @@ class Tabela:
         self.num_buckets = num_buckets
         self.buckets = [Bucket() for _ in range(num_buckets)]
 
+    # Tirar dúvida com o professor sobre essa função.
     def funcao_hash(self, chave):
         return hash(chave) % self.num_buckets
 
     def construir_indice(self):
-        self.inicializar_buckets(len(self.paginas))  # Um bucket por página, como exemplo
+        self.inicializar_buckets(len(self.paginas))
         for i, pagina in enumerate(self.paginas):
             for tupla in pagina.tuplas:
                 indice_bucket = self.funcao_hash(tupla.chave)

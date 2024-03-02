@@ -2,11 +2,8 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, scrolledtext
 from data_sctructures import Tabela, Tupla
 
-# Inicialização da tabela com um tamanho de página exemplo
-tamanho_pagina = 1000  # Este valor pode ser ajustado conforme necessário
+tamanho_pagina = 100
 tabela = Tabela(tamanho_pagina)
-
-# Declarando variáveis globais para acessá-las em diferentes funções
 load_status = None
 search_result = None
 table_scan_text = None
@@ -14,10 +11,10 @@ stats_text = None
 
 def setup_gui(root):
     global load_status, search_result, table_scan_text, stats_text, tamanho_pagina_var
-    tamanho_pagina_var = tk.IntVar(value=100)  # Valor padrão de 100
+    tamanho_pagina_var = tk.IntVar(value=100)
 
     root.title("Índice Hash Estático")
-    root.geometry("1024x768")  # Ajuste o tamanho da janela conforme necessário
+    root.geometry("1024x768")
 
     # Carregamento de Dados
     load_frame = tk.Frame(root)
@@ -44,10 +41,6 @@ def setup_gui(root):
 
     tamanho_pagina_button = tk.Button(tamanho_pagina_frame, text="Definir Tamanho", command=set_tamanho_pagina)
     tamanho_pagina_button.pack(side=tk.LEFT, padx=10)
-
-    # Construção do Índice
-    # build_index_button = tk.Button(root, text="Construir Índice", command=build_index)
-    # build_index_button.pack(pady=10)
 
     # Busca
     search_frame = tk.Frame(root)
@@ -85,26 +78,26 @@ def load_data():
     filename = filedialog.askopenfilename(filetypes=(("Text files", "*.txt"), ("All files", "*.*")))
     if filename:
         try:
-            tabela = Tabela(tamanho_pagina_var.get())  # Utilize o tamanho da página definido pelo usuário
+            tabela = Tabela(tamanho_pagina_var.get())
             with open(filename, 'r') as file:
                 for line in file:
                     palavra = line.strip()
                     tabela.adicionar_tupla(Tupla(palavra, palavra))
             load_status.config(text=f"Arquivo Carregado: {filename.split('/')[-1]}")
-            tabela.construir_indice()  # Construa o índice imediatamente após carregar os dados
+            tabela.construir_indice()
             messagebox.showinfo("Carregamento e Construção de Índice", "Dados carregados e índice construído com sucesso.")
         except Exception as e:
             messagebox.showerror("Erro ao Carregar", f"Ocorreu um erro ao carregar o arquivo: {e}")
 
 def build_index():
     try:
-        tabela.construir_indice()  # Supõe-se que existe um método construir_indice na classe Tabela
+        tabela.construir_indice()
         messagebox.showinfo("Construir Índice", "Índice construído com sucesso.")
     except Exception as e:
         messagebox.showerror("Erro ao Construir Índice", f"Ocorreu um erro ao construir o índice: {e}")
 
 def search(query):
-    resultado = tabela.buscar(query)  # A função buscar deve ser modificada para retornar os detalhes necessários
+    resultado = tabela.buscar(query)
     if resultado:
         search_result.config(text=f"Palavra: '{resultado['palavra']}', Página: {resultado['página']}, Páginas Acessadas: {resultado['páginas_acessadas']}")
     else:
@@ -115,7 +108,7 @@ def table_scan(limit):
     try:
         limit = int(limit)
         resultados = tabela.table_scan(limit)
-        table_scan_text.delete('1.0', tk.END)  # Limpa o texto antes de inserir novos resultados
+        table_scan_text.delete('1.0', tk.END)
         for tupla in resultados:
             #table_scan_text.insert(tk.END, f"{tupla.chave}: {tupla.dados}\n")
             table_scan_text.insert(tk.END, f"{tupla.chave}\n")
@@ -127,7 +120,7 @@ def table_scan(limit):
 def mostrar_estatisticas():
     global stats_text
     estatisticas = tabela.calcular_estatisticas()
-    stats_text.delete('1.0', tk.END)  # Limpa o texto antes de inserir novas estatísticas
+    stats_text.delete('1.0', tk.END)
     stats_text.insert(tk.END, f"Total de Entradas: {estatisticas['total_entradas']}\n")
     stats_text.insert(tk.END, f"Total de Colisões: {estatisticas['total_colisoes']}\n")
     stats_text.insert(tk.END, f"Taxa de Colisões: {estatisticas['taxa_colisoes']:.2f}\n")
